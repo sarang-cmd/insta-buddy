@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <meta
+      name="description"
+      content="Run the real Insta Buddy web app in your browser with a locally generated demo trip."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/assets/fonts/newsreader-latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>Working demo, Insta Buddy</title>
+  </head>
+  <body class="demo-page">
+    <a class="skip-link" href="#demo-frame">Skip to the demo</a>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Insta Buddy home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>insta buddy</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#privacy">Privacy</a>
+        <a href="index.html#faq">FAQ</a>
+        <a class="nav-demo" href="demo.html" aria-current="page">Open demo</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="demo-intro" aria-labelledby="demo-title">
+        <div>
+          <h1 id="demo-title">The working demo.</h1>
+          <p>
+            This is the real web app from the repository, running in your browser. Click Try a demo trip inside the
+            frame to generate sample holiday photos locally. No account, no upload and no setup.
+          </p>
+        </div>
+        <a class="button secondary demo-open" href="/app/" target="_blank" rel="noreferrer">Open in a new page</a>
+      </section>
+
+      <section class="demo-frame" id="demo-frame" aria-label="Insta Buddy working demo">
+        <iframe
+          src="/app/"
+          title="Insta Buddy working demo"
+          loading="eager"
+          allow="clipboard-write; fullscreen"
+        >
+          <p>Your browser does not support frames. <a href="/app/">Open the demo directly.</a></p>
+        </iframe>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>insta buddy</span>
+          </a>
+          <p>An on-device photo dump sorter with optional AI.</p>
+        </div>
+        <div>
+          <p class="footer-heading">Explore</p>
+          <div class="footer-links">
+            <a href="index.html#product">Product</a>
+            <a href="index.html#how">How it works</a>
+            <a href="index.html#privacy">Privacy</a>
+            <a href="index.html#faq">FAQ</a>
+          </div>
+        </div>
+        <div>
+          <p class="footer-heading">Project</p>
+          <div class="footer-links">
+            <a href="https://github.com/sarang-cmd/insta-buddy" target="_blank" rel="noreferrer">Source on GitHub</a>
+            <a href="terms.html">Terms of Service <span class="draft-note">draft</span></a>
+            <a href="privacy.html">Privacy Policy <span class="draft-note">draft</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Terms and Privacy are drafts for review. Missing publisher and contact details are marked on those pages.</span>
+        <span>No account. No upload by default.</span>
+      </div>
+    </footer>
+  </body>
+</html>

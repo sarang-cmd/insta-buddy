@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <meta name="description" content="Draft Privacy Policy for the Insta Buddy project. Not yet effective." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/assets/fonts/newsreader-latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>Privacy Policy, draft, Insta Buddy</title>
+  </head>
+  <body class="legal-page">
+    <a class="skip-link" href="#legal-content">Skip to content</a>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Insta Buddy home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>insta buddy</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#privacy">Privacy</a>
+        <a href="index.html#faq">FAQ</a>
+        <a class="nav-demo" href="demo.html">Open demo</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="legal-hero" aria-labelledby="legal-title">
+        <p class="draft-banner">
+          Draft for review. This page is not yet effective. Placeholders in square brackets describe information that
+          has not been supplied yet.
+        </p>
+        <h1 id="legal-title">Privacy Policy.</h1>
+        <p class="legal-meta">
+          Draft prepared <time datetime="2026-10-26">26 October 2026</time>. Not legal advice. No data controller or
+          effective date has been named.
+        </p>
+      </section>
+
+      <article class="legal-content" id="legal-content">
+        <h2>1. About this draft</h2>
+        <p>
+          This draft describes the code in the Insta Buddy repository at the time it was prepared. It covers the web
+          app, the desktop app and this static marketing site. It does not cover a hosted backend, because this
+          repository does not include one. It is not a finished policy and should be reviewed by a qualified lawyer
+          before launch.
+        </p>
+        <p>
+          The data controller or project owner has not been identified yet:
+          <span class="placeholder">[Controller legal name and address]</span>. A working privacy contact is also
+          missing: <span class="placeholder">[Contact email]</span>.
+        </p>
+
+        <h2>2. What the app processes</h2>
+        <p>
+          When you add files, the app reads the image, available EXIF metadata and file timestamps. It creates
+          previews, analysis scores, similarity hashes, suggested edits, captions and export files. In the current
+          version, photos and analysis results are held in memory for the active session. Refreshing the page or using
+          New trip clears that session. There is no local photo database in version 1.
+        </p>
+        <p>
+          AI settings are stored in browser local storage in the web build. In the web build, API keys are held in
+          memory only. In the desktop build, keys are stored in an encrypted vault in the application data directory,
+          using OS encryption where available.
+        </p>
+
+        <h2>3. When information leaves your device</h2>
+        <p>
+          Sorting, scoring, grouping, editing, caption drafting and export run on your device. Information can leave
+          your device when you deliberately enable an optional AI feature. Depending on the feature and your settings,
+          that request may include text, photo metadata or images. Sending photos to a cloud provider requires a
+          separate image upload opt-in. Local providers such as Ollama or LM Studio can receive requests on your own
+          machine.
+        </p>
+        <p>
+          The desktop app sends AI requests from its main process and applies an HTTPS guard, with a loopback HTTP
+          exception for local providers. The web build keeps keys in memory for the current tab. The app does not
+          upload your photo library by default.
+        </p>
+
+        <h2>4. What this repository does not include</h2>
+        <p>
+          At the time of writing, the repository contains no backend service, no user account system, no analytics SDK
+          and no advertising SDK. The marketing site code sets no cookies of its own. A hosting provider may still
+          create access logs when it serves these static files. That provider and its log retention period must be
+          documented here: <span class="placeholder">[Hosting provider and log retention]</span>.
+        </p>
+
+        <h2>5. Website data</h2>
+        <p>
+          This site is built from static HTML, CSS, JavaScript, fonts and screenshots. It does not include a contact
+          form, analytics script or embedded third-party tracker in its own code. If a content delivery network,
+          hosting provider or external link is added later, this section must be updated before deployment.
+        </p>
+
+        <h2>6. Retention</h2>
+        <p>
+          Photos, previews and edits remain in memory until the session ends or you clear the trip. AI settings remain
+          in local storage until you clear site data. Desktop API keys remain in the encrypted vault until they are
+          removed or the application data is deleted. Exported ZIP files remain on your disk until you delete them.
+          Provider-side retention for optional AI requests is controlled by the provider you selected and must be
+          checked in that provider's policy.
+        </p>
+
+        <h2>7. Your choices</h2>
+        <p>
+          You can use the app without AI, keep image upload off, choose which photos to export, clear local site data
+          and close the tab to end a session. The working demo can be used with the built-in generated photos instead
+          of your own files.
+        </p>
+
+        <h2>8. Children</h2>
+        <p>
+          An age policy has not been decided: <span class="placeholder">[Minimum age and parental consent policy]</span>.
+          This section must be completed before launch.
+        </p>
+
+        <h2>9. Data requests and changes</h2>
+        <p>
+          The process for access, deletion or correction requests is not yet defined:
+          <span class="placeholder">[Data request process]</span>. The policy change notice method is also missing:
+          <span class="placeholder">[Policy update notice method]</span>.
+        </p>
+
+        <section class="legal-checklist" aria-labelledby="checklist-title">
+          <h2 id="checklist-title">Before publishing this page</h2>
+          <ul>
+            <li>Name the data controller and provide a working privacy contact.</li>
+            <li>Set an effective date and remove the draft banner.</li>
+            <li>Document the hosting provider, access logs and retention period.</li>
+            <li>Confirm whether any analytics, CDN or external font service will be used.</li>
+            <li>Add an age policy and a data request process.</li>
+            <li>List applicable jurisdictions and international transfer rules.</li>
+            <li>Review optional AI provider data flows against each provider's terms.</li>
+            <li>Have the final text reviewed by a qualified lawyer.</li>
+          </ul>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>insta buddy</span>
+          </a>
+          <p>An on-device photo dump sorter with optional AI.</p>
+        </div>
+        <div>
+          <p class="footer-heading">Explore</p>
+          <div class="footer-links">
+            <a href="index.html#product">Product</a>
+            <a href="index.html#how">How it works</a>
+            <a href="index.html#privacy">Privacy</a>
+            <a href="index.html#faq">FAQ</a>
+            <a href="demo.html">Working demo</a>
+          </div>
+        </div>
+        <div>
+          <p class="footer-heading">Project</p>
+          <div class="footer-links">
+            <a href="https://github.com/sarang-cmd/insta-buddy" target="_blank" rel="noreferrer">Source on GitHub</a>
+            <a href="terms.html">Terms of Service <span class="draft-note">draft</span></a>
+            <a href="privacy.html" aria-current="page">Privacy Policy <span class="draft-note">draft</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Terms and Privacy are drafts for review. Missing publisher and contact details are marked on those pages.</span>
+        <span>No account. No upload by default.</span>
+      </div>
+    </footer>
+  </body>
+</html>
