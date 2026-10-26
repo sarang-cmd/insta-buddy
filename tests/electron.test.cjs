@@ -151,7 +151,15 @@ async function main() {
   check((await handlers.get('ai:setKey')(null, 'openai', '  sk-secret-123  ')).ok, 'setKey ok')
   const vaultFile = path.join(tmp, 'userData', 'ai-keys.json')
   check(!fs.readFileSync(vaultFile, 'utf8').includes('sk-secret-123'), 'raw key never written to disk')
-  check((fs.statSync(vaultFile).mode & 0o777) === 0o600, 'vault file mode is 0600')
+  // POSIX only: Windows has no Unix file modes, so writeFileSync({ mode }) and
+  // chmodSync are no-ops there and this assertion could never hold. Assert what
+  // each platform can actually guarantee about the vault file.
+  const vaultMode = fs.statSync(vaultFile).mode & 0o777
+  if (process.platform === 'win32') {
+    check(fs.existsSync(vaultFile), 'vault file written (0600 is a no-op on Windows)')
+  } else {
+    check(vaultMode === 0o600, `vault file mode is 0600 (got ${vaultMode.toString(8)})`)
+  }
   check((await handlers.get('ai:status')()).providers.openai === true, 'key status reflected')
   check((await handlers.get('ai:setKey')(null, 'nope', 'x')).ok === false, 'unknown provider rejected')
   check((await handlers.get('ai:setKey')(null, 'openai', 'x'.repeat(5000))).ok === false, 'oversized key rejected')

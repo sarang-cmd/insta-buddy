@@ -45,7 +45,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npx electron-builder --win nsis --publish never
+      - run: npm run build
+      - run: npm run electron:build
+      - run: npx electron-builder --win nsis --publish never --verbose
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
@@ -63,7 +65,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx electron-builder --mac dmg --publish never
+      - run: npm run build
+      - run: npm run electron:build
+      - run: npx electron-builder --mac dmg --publish never --verbose
       - uses: actions/upload-artifact@v4
         with:
           name: mac-dmg
@@ -81,7 +85,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx electron-builder --linux AppImage deb --publish never
+      - run: npm run build
+      - run: npm run electron:build
+      - run: npx electron-builder --linux AppImage deb --publish never --verbose
       - uses: actions/upload-artifact@v4
         with:
           name: linux-installers
