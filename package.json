@@ -15,7 +15,10 @@
     "desktop:package:dir": "npm run build && npm run electron:build && electron-builder --dir --publish never",
     "test:ai": "esbuild tests/ai.test.ts --bundle --platform=node --format=esm --outfile=.tmp/ai.test.mjs --log-level=error && node .tmp/ai.test.mjs",
     "test:electron": "npm run electron:build && node tests/electron.test.cjs",
-    "test": "npm run typecheck && npm run test:ai && npm run test:electron"
+    "test": "npm run typecheck && npm run test:ai && npm run test:electron",
+    "desktop:package:win": "npm run build && npm run electron:build && electron-builder --win nsis --publish never",
+    "desktop:package:mac": "npm run build && npm run electron:build && electron-builder --mac dmg --publish never",
+    "desktop:package:linux": "npm run build && npm run electron:build && electron-builder --linux AppImage deb --publish never"
   },
   "dependencies": {
     "exifr": "^7.1.3",
@@ -35,7 +38,7 @@
     "electron-builder": "^25.1.8"
   },
   "main": "electron/dist/main.cjs",
-  "description": "Sort, cull, touch up and caption a holiday photo dump \u2014 on-device, with optional AI providers.",
+  "description": "Sort, cull, touch up and caption a holiday photo dump — on-device, with optional AI providers.",
   "author": "Insta Buddy",
   "build": {
     "appId": "app.instabuddy.desktop",

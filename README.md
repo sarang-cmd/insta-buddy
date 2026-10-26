@@ -25,7 +25,8 @@ npm install
 npm run dev            # web app on http://localhost:5173
 npm run desktop:dev    # electron + vite with HMR
 npm run desktop        # build once and run the packaged-style desktop app
-npm run desktop:package # installers into release/ (dmg / nsis / AppImage + deb)
+npm run desktop:package      # installers into release/ (dmg / nsis / AppImage + deb)
+npm run desktop:package:win  # Windows NSIS installer only → release/*.exe
 npm test               # typecheck + 100+ assertions across the AI layer and the Electron shell
 ```
 
@@ -136,6 +137,10 @@ scripts/
   build-electron.mjs   esbuild bundle for main + preload
   dev-desktop.mjs      vite + electron dev loop
 electron-builder.yml   dmg / nsis / AppImage + deb
+.github/workflows/build-release.yml   per-platform installers on push / tag
+build/
+  icon.ico / icon.png / icon-512.png    app icons
+  entitlements.mac.plist                hardened-runtime entitlements
 ```
 
 **Security posture**
@@ -153,15 +158,61 @@ electron-builder.yml   dmg / nsis / AppImage + deb
 
 **Packaging**
 ```bash
-npm run desktop:package        # release/Insta Buddy-0.1.0-arm64.dmg, .exe, .AppImage, .deb …
+npm run desktop:package      # release/Insta Buddy-0.1.0-arm64.dmg, .exe, .AppImage, .deb …
+npm run desktop:package:win  # Windows NSIS installer → release/Insta Buddy-0.1.0-x64.exe
 ```
 `electron-builder.yml` targets macOS arm64+x64 (hardened runtime + entitlements), Windows x64+arm64 (NSIS), and Linux
 AppImage + deb. Assets load over `file://` from `dist/`, which is why Vite is configured with `base: './'`.
+Icons live in `build/`: `icon.ico` (16–256 px, 32-bit RGBA) for Windows, `icon.png` (1024) for macOS, `icon-512.png`
+for Linux.
 
-> Note: `npm install` downloads the Electron binary from GitHub releases. In a restricted sandbox you can skip it with
-> `ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install` — the web app and all tests still work; you just can't launch the
-> desktop window there. `npm run test:electron` runs the real main-process bundle against a mocked `electron` module, so
-> the shell is testable without a display.
+### Building the `.exe` on Windows
+
+```powershell
+git clone https://github.com/sarang-cmd/insta-buddy; cd insta-buddy
+npm install
+npm run desktop:package:win
+```
+
+`release/Insta Buddy-0.1.0-x64.exe` is the NSIS installer; `release/Insta Buddy-0.1.0-arm64.exe` is the ARM64 build.
+Install and launch it:
+
+```powershell
+.\release\Insta Buddy-0.1.0-x64.exe
+```
+
+To build only one architecture (useful if you don't have an ARM64 host for the ARM64 target):
+
+```powershell
+npx electron-builder --win nsis --x64   --publish never
+npx electron-builder --win nsis --arm64 --publish never
+```
+
+**Code signing.** The installer is unsigned, so Windows shows a SmartScreen warning on first run. To clear it,
+right-click the `.exe` → *Properties* → tick *Unblock*, or replace the identity with your own certificate via
+`CSC_KEY_PASSWORD` / `win.signtoolOptions` in CI. `app.instabuddy.desktop` is already in `electron-builder.yml`, so
+your signed build keeps the same identity once you add the certificate.
+
+### Continuous integration
+
+`.github/workflows/build-release.yml` builds every platform on every push to `main` and on `v*` tags, and uploads
+each installer as an artifact:
+
+| Job | Runner | Artifact |
+|---|---|---|
+| `installer-windows` | `windows-latest` | `release/*.exe` (NSIS) |
+| `installer-mac` | `macos-14` | `release/*.dmg` |
+| `installer-linux` | `ubuntu-latest` | `release/*.AppImage` |
+| `test` | `ubuntu-latest` | `dist/` + `electron/dist/` layout |
+
+The Windows job runs `npm test` before packaging, so a broken build can't ship. Grab the installer from the Actions
+tab, or `gh run download --repo sarang-cmd/insta-buddy`. Push a `v0.1.0` tag to cut a version.
+
+> Note: `npm install` downloads the Electron binary from GitHub release assets. In a restricted sandbox you can skip it
+> with `ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install` — the web app and all tests still work, but packaging cannot run
+> because the win32 Electron zip lives on `objects.githubusercontent.com` (this is what blocked the `.exe` build in
+> the build sandbox; CI and a Windows machine have no such restriction). `npm run test:electron` runs the real
+> main-process bundle against a mocked `electron` module, so the shell is testable without a display.
 
 ---
 
