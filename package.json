@@ -1,0 +1,44 @@
+{
+  "name": "insta-buddy",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "electron:build": "node scripts/build-electron.mjs",
+    "desktop": "npm run electron:build && npm run build && electron .",
+    "desktop:dev": "node scripts/dev-desktop.mjs",
+    "desktop:package": "npm run build && npm run electron:build && electron-builder --publish never",
+    "desktop:package:dir": "npm run build && npm run electron:build && electron-builder --dir --publish never",
+    "test:ai": "esbuild tests/ai.test.ts --bundle --platform=node --format=esm --outfile=.tmp/ai.test.mjs --log-level=error && node .tmp/ai.test.mjs",
+    "test:electron": "npm run electron:build && node tests/electron.test.cjs",
+    "test": "npm run typecheck && npm run test:ai && npm run test:electron"
+  },
+  "dependencies": {
+    "exifr": "^7.1.3",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "electron-builder": "^25.1.8"
+  },
+  "main": "electron/dist/main.cjs",
+  "description": "Sort, cull, touch up and caption a holiday photo dump \u2014 on-device, with optional AI providers.",
+  "author": "Insta Buddy",
+  "build": {
+    "appId": "app.instabuddy.desktop",
+    "productName": "Insta Buddy"
+  }
+}
