@@ -124,7 +124,60 @@ Each carries `confidence`, `reason`, and a tonal `kind` (geometry / light / colo
 
 ---
 
-## 8. Build order
+## 8. Desktop shell (Electron)
+
+The renderer is unchanged: same Vite bundle, same stores. The desktop build only adds a secure host around it.
+
+**Process split**
+
+| Layer | Responsibility |
+| --- | --- |
+| `electron/main.ts` | window + menu + CSP, IPC router, native dialogs, single-instance, window state |
+| `electron/preload.ts` | one `contextBridge` surface (`window.buddy`) — no node exposed to the page |
+| `electron/aiProxy.ts` | all provider traffic: key injection, https guard, retry, timeouts, error normalisation |
+| `electron/vault.ts` | keys at rest: `safeStorage` → OS keychain, file mode 0600, fallback flagged |
+
+**Why proxy through main**: CORS disappears for every provider, keys never exist in page memory, and the app can
+enforce policy (https-only, loopback exception for local models, payload caps) in one place. The renderer contract is
+`{providerId, modelId, baseUrl?, request} → {ok, result | error, httpStatus, ms}`.
+
+**Hardening checklist**: `contextIsolation` on, `nodeIntegration` off, `sandbox` on, strict CSP, `window.open` denied,
+in-app navigation only, webviews blocked, permissions denied, external links `https`-checked, vault 0600, no secrets in
+logs, single-instance lock.
+
+**Packaging**: `electron-builder` → dmg (arm64/x64, hardened runtime + entitlements), NSIS (x64/arm64), AppImage + deb.
+`vite base: './'` so `file://` loading works; asar with only `dist/**`, `electron/dist/**`, `package.json`.
+
+## 9. AI providers (12) — pluggable layer
+
+**Shape**: a provider registry (id, transport, base URL, models with per-model capabilities, quirks) + request builders
++ response parsers + one runtime. Three transports cover twelve providers:
+
+| Transport | Providers | Notes |
+| --- | --- | --- |
+| OpenAI-compatible | OpenAI, OpenRouter, Groq, Mistral, DeepSeek, xAI, Together, LM Studio | different base URLs, some extra headers, optional JSON mode |
+| Azure OpenAI | Azure | deployment in path, `api-key` header, `api-version` |
+| Anthropic | Claude | `x-api-key`, `anthropic-version`, base64 image blocks |
+| Gemini | Google | `:generateContent`, `inline_data`, `responseModalities` for image out |
+| Ollama | Ollama | native `/api/chat`, images as base64 array, no key |
+
+**Capabilities are per model**, so `gpt-4.1-mini` (vision, no pixels) and `gpt-image-1` (masked edits) coexist under one
+provider badge. The UI disables what the selected model can't do and explains the fix.
+
+**Feature mapping**
+
+| Feature | Request | Fallback |
+| --- | --- | --- |
+| Captions / hashtags / alt text | `text` or `vision` + JSON mode | local template engine |
+| Second opinion on a frame | `vision` → verdict, score, issues, ≤4 editable actions | local rule suggestions |
+| Burst ranking | `vision` over ≤4 frames → winner + why | local score ordering |
+| AI erase | `imageEdit` with the painted mask (PNG alpha) | on-device inpaint |
+
+**Safety rails**: image upload is a separate hard opt-in from picking a provider; size is capped (768/1024/1536 px);
+prompts demand JSON and parsing is tolerant (fences, prose, truncation) with clamping of every field; unknown edit kinds
+are dropped; requests are time/​size bounded; all failures map to a hint.
+
+## 10. Build order
 
 1. Scaffold, design tokens, shell, drop zone.
 2. EXIF + decode + thumbnail pipeline with progress.
@@ -135,11 +188,19 @@ Each carries `confidence`, `reason`, and a tonal `kind` (geometry / light / colo
 7. Compose, captions, export.
 8. Demo-photo generator (procedural holiday scenes with bursts, tilts, wires) so the app is explorable with zero setup.
 9. Polish: keyboard, empty/error states, responsive, README.
+10. Electron shell: preload contract, IPC, vault, proxy, CSP/menu, packaging config.
+11. AI layer: registry → transports → runtime → tasks → settings UI → feature wiring in review/compose/editor.
+12. Tests: transport construction for all 12, runtime dispatch, task parsing, and the main process against a mocked
+    Electron (key-at-rest, https enforcement, retries, dialogs).
 
-## 9. Deliberate limits (documented in-app)
+## 11. Deliberate limits (documented in-app)
 
 - Skin-tone people detection is a **heuristic**, not a model — it seeds the brush.
 - Line detection finds strong straight edges; thin wires over busy backgrounds can be missed.
 - Extend is mirrored-edge synthesis, not a diffusion model — good for sky/wall/sea, visible on text/faces.
 - Captions are template-generated; you can edit every line.
 - Everything is cached in memory; a refresh clears the trip (no local DB in v1).
+- AI features are opt-in and provider-dependent. Image editing needs an image model, and only four providers have one.
+- In the web build, keys are session-only; only the desktop build has the encrypted vault and the CORS-free proxy.
+- The Electron binary is downloaded at install time; the shell is covered by tests that run the real main bundle against
+  a mocked Electron, so CI needs no display.

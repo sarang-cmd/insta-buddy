@@ -18,6 +18,9 @@ import { autoMask } from '../lib/inpaint'
 import { primeImage } from '../lib/preview'
 import { useStore } from '../lib/store'
 import { safeBulkPatch, suggestionsFor } from '../lib/suggestions'
+import { removeWithAi } from '../lib/ai/tasks'
+import { useAiStore } from '../lib/aiStore'
+import { canDo, providerById } from '../lib/ai/providers'
 import { EMPTY_RECIPE, type Adjust, type Recipe } from '../lib/types'
 
 type Tab = 'light' | 'colour' | 'geometry' | 'retouch'
@@ -71,6 +74,12 @@ export function Editor() {
   const undoPhoto = useStore((s) => s.undoPhoto)
   const resetPhoto = useStore((s) => s.resetPhoto)
   const retouch = useStore((s) => s.retouch)
+  const replaceBase = useStore((s) => s.replaceBaseWithDataUrl)
+  const aiProviderId = useAiStore((s) => s.settings.providerId)
+  const aiModelId = useAiStore((s) => s.settings.modelId)
+  const aiSettings = useAiStore((s) => s.settings)
+  const aiNotice = useAiStore((s) => s.setNotice)
+  const [aiBusy, setAiBusy] = useState(false)
   const pendingRetouch = useStore((s) => s.pendingRetouch)
   const seedRetouch = useStore((s) => s.seedRetouch)
   const toast = useStore((s) => s.toast)
@@ -247,6 +256,41 @@ export function Editor() {
     const ctx = ctx2d(b)
     ctx.clearRect(0, 0, b.width, b.height)
     setHasMask(false)
+  }
+
+  const canAiEdit = !!aiProviderId && canDo(aiProviderId, aiModelId, 'imageEdit')
+
+  const runAiRemove = async () => {
+    if (!photo || !aiProviderId) return
+    const brushLayer = brushRef.current
+    const stage = canvasRef.current
+    if (!stage) return
+    if (!brushLayer || !hasMask) {
+      toast('Paint over what AI should erase first.', 'warn')
+      return
+    }
+    setAiBusy(true)
+    try {
+      // send exactly what the user sees, plus the painted mask
+      const working = makeCanvas(stage.width, stage.height)
+      ctx2d(working).drawImage(stage, 0, 0)
+      const maskCanvas = makeCanvas(brushLayer.width, brushLayer.height)
+      ctx2d(maskCanvas).drawImage(brushLayer, 0, 0)
+      // keep the recipe so the retouch base matches the visible frame
+      setRecipe(photo.id, clone(draft))
+      await new Promise((r) => setTimeout(r, 40))
+      const result = await removeWithAi({ image: working, mask: maskCanvas }, aiSettings)
+      await replaceBase(photo.id, result.dataUrl, `Erased by ${result.model}`)
+      setBrush(false)
+      setHasMask(false)
+      close()
+    } catch (err) {
+      const e = err as { message?: string; hint?: string }
+      aiNotice({ tone: 'warn', message: e.message ?? 'The AI erase failed.', hint: e.hint })
+      toast(e.message ?? 'The AI erase failed.', 'warn')
+    } finally {
+      setAiBusy(false)
+    }
   }
 
   const runRetouch = async (mode: 'wires' | 'people' | 'object' | 'manual') => {
@@ -546,8 +590,28 @@ export function Editor() {
                 </button>
               </div>
               <button className="btn primary" style={{ width: '100%' }} onClick={() => runRetouch('manual')} disabled={!hasMask}>
-                <Eraser size={13} /> Fill painted area
+                <Eraser size={13} /> Fill painted area · on-device
               </button>
+              <button
+                className="btn"
+                style={{ width: '100%', marginTop: 6 }}
+                onClick={runAiRemove}
+                disabled={!hasMask || aiBusy || !canAiEdit}
+                title={
+                  canAiEdit
+                    ? `Send this frame and mask to ${providerById(aiProviderId!)?.name}`
+                    : 'Needs an image-editing model: gpt-image-1, Gemini 2.5 Flash Image or FLUX Kontext'
+                }
+              >
+                {aiBusy ? <span className="spinner" /> : <Sparkles size={13} />}
+                {aiBusy ? 'Sending to provider…' : canAiEdit ? 'Erase with AI (provider)' : 'AI erase needs an image model'}
+              </button>
+              {!canAiEdit && aiProviderId && (
+                <p className="hint" style={{ marginTop: 6 }}>
+                  {providerById(aiProviderId)?.name} can describe photos, but pixel edits need an image model. OpenAI,
+                  Azure, Gemini and Together have one.
+                </p>
+              )}
             </>
           )}
 

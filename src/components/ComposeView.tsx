@@ -12,6 +12,9 @@ import {
   Wand2,
 } from 'lucide-react'
 import { usePreview } from '../hooks'
+import { getBridge } from '../lib/ai/bridge'
+import { generateCaptionsWithAi } from '../lib/ai/tasks'
+import { useAiStore } from '../lib/aiStore'
 import { PhotoThumb } from './PhotoThumb'
 import { useStore } from '../lib/store'
 import { tripStats } from '../lib/grouping'
@@ -69,6 +72,14 @@ export function ComposeView() {
   const overrides = useStore((s) => s.captionOverrides)
   const setCaptionOverride = useStore((s) => s.setCaptionOverride)
   const refreshCaptions = useStore((s) => s.refreshCaptions)
+  const captionsSource = useStore((s) => s.captionsSource)
+  const aiCaptionModel = useStore((s) => s.aiCaptionModel)
+  const aiSettings = useAiStore((s) => s.settings)
+  const aiProviderId = useAiStore((s) => s.settings.providerId)
+  const aiCaptionBusy = useAiStore((s) => s.captionBusy)
+  const aiSetBusy = useAiStore((s) => s.setCaptionBusy)
+  const aiNotice = useAiStore((s) => s.setNotice)
+  const aiSetOpen = useAiStore((s) => s.setOpen)
   const toast = useStore((s) => s.toast)
   const setView = useStore((s) => s.setView)
 
@@ -107,6 +118,44 @@ export function ComposeView() {
     story: overrides.story ?? captions?.story ?? '',
   }
 
+  const runAiCaptions = async () => {
+    if (!aiProviderId) {
+      aiNotice({
+        tone: 'info',
+        message: 'Pick an AI provider first.',
+        hint: 'All 12 are optional — the local caption writer above never leaves the device.',
+      })
+      aiSetOpen(true)
+      return
+    }
+    aiSetBusy(true)
+    try {
+      const result = await generateCaptionsWithAi(
+        { photos: selected, sessions, stats: { total: stats.total, kept: selected.length, days: stats.days } },
+        aiSettings,
+      )
+      const merged = {
+        short: result.short || captionText.short,
+        playful: result.playful || captionText.playful,
+        story: result.story || captionText.story,
+        hashtags: result.hashtags.length ? result.hashtags : (captions?.hashtags ?? []),
+        altTexts: result.altTexts.length
+          ? result.altTexts.map((text, i) => ({ photoId: selected[i]?.id ?? `ai-${i}`, text }))
+          : (captions?.altTexts ?? []),
+        vibe: result.vibe.name ? result.vibe : (captions?.vibe ?? { name: 'The trip', traits: [] }),
+      }
+      useStore.getState().applyAiCaptions(merged, { short: merged.short, playful: merged.playful, story: merged.story }, result.model)
+      aiNotice({ tone: 'good', message: `Captions written by ${result.model}.` })
+      toast('AI captions in — edit anything you like', 'good')
+    } catch (err) {
+      const e = err as { message?: string; hint?: string }
+      aiNotice({ tone: 'warn', message: e.message ?? 'Caption generation failed.', hint: e.hint })
+      toast(e.message ?? 'Caption generation failed.', 'warn')
+    } finally {
+      aiSetBusy(false)
+    }
+  }
+
   const runExport = async () => {
     if (!selected.length) {
       toast('Nothing selected to export.', 'warn')
@@ -119,8 +168,17 @@ export function ComposeView() {
         { longEdge, includeOriginal, format, captions, captionText },
         (done, total) => setExporting({ done, total }),
       )
-      downloadBlob(blob, `insta-buddy-dump-${selected.length}-frames.zip`)
-      toast('Dump exported — photos, captions and a feed grid', 'good')
+      const name = `insta-buddy-dump-${selected.length}-frames.zip`
+      const bridge = getBridge()
+      if (bridge) {
+        const buffer = await blob.arrayBuffer()
+        const res = await bridge.files.saveFile(name, buffer)
+        if (res.saved) toast(`Saved to ${res.path ?? 'disk'}`, 'good')
+        else toast('Export cancelled', 'info')
+      } else {
+        downloadBlob(blob, name)
+        toast('Dump exported — photos, captions and a feed grid', 'good')
+      }
     } catch (err) {
       console.error(err)
       toast('Export failed. Try a smaller long edge.', 'warn')
@@ -297,11 +355,26 @@ export function ComposeView() {
         )}
 
         <div className="rail-head" style={{ marginBottom: 8 }}>
-          <h4>Captions</h4>
-          <button className="btn small ghost" onClick={refreshCaptions}>
+          <h4>
+            Captions{' '}
+            <span className={`caption-source ${captionsSource === 'ai' ? 'ai' : ''}`}>
+              {captionsSource === 'ai' ? aiCaptionModel ?? 'AI' : 'local'}
+            </span>
+          </h4>
+          <button className="btn small ghost" onClick={refreshCaptions} title="Reroll the on-device captions">
             <Wand2 size={11} /> Reroll
           </button>
         </div>
+        <button
+          className={`btn small ${aiProviderId ? 'primary' : ''}`}
+          style={{ width: '100%', marginBottom: 10 }}
+          onClick={runAiCaptions}
+          disabled={aiCaptionBusy}
+          title={aiProviderId ? 'Write captions with your AI provider' : 'Configure an AI provider'}
+        >
+          <Sparkles size={12} />
+          {aiCaptionBusy ? 'Writing…' : aiProviderId ? 'Write captions with AI' : 'Set up AI captions'}
+        </button>
         <CaptionCard
           title="Short"
           value={captionText.short}

@@ -1,11 +1,14 @@
 import { useEffect } from 'react'
 import { CheckCircle2, Info, TriangleAlert } from 'lucide-react'
 import { useStore } from './lib/store'
+import { useAiStore } from './lib/aiStore'
+import { getBridge } from './lib/ai/bridge'
 import { TopBar } from './components/TopBar'
 import { DropView } from './components/DropView'
 import { ReviewView } from './components/ReviewView'
 import { ComposeView } from './components/ComposeView'
 import { Editor } from './components/Editor'
+import { AiSettings } from './components/AiSettings'
 
 function ProcessingOverlay() {
   const processing = useStore((s) => s.processing)
@@ -37,11 +40,14 @@ function ProcessingOverlay() {
 
 function BusyOverlay() {
   const busy = useStore((s) => s.busy)
-  if (!busy) return null
+  const captionBusy = useAiStore((s) => s.captionBusy)
+  const adviceBusy = useAiStore((s) => s.adviceBusy)
+  const label = busy ?? (captionBusy ? 'Writing captions with your provider…' : adviceBusy ? 'Asking for a second opinion…' : null)
+  if (!label) return null
   return (
     <div className="busy-overlay">
       <div className="box">
-        <span className="spinner" /> {busy}
+        <span className="spinner" /> {label}
       </div>
     </div>
   )
@@ -73,6 +79,35 @@ export default function App() {
   const photos = useStore((s) => s.photos)
   const addFiles = useStore((s) => s.addFiles)
   const processing = useStore((s) => s.processing)
+  const hydrate = useAiStore((s) => s.hydrate)
+  const setAiOpen = useAiStore((s) => s.setOpen)
+  const setView = useStore((s) => s.setView)
+
+  useEffect(() => {
+    void hydrate()
+  }, [hydrate])
+
+  // native menu → app actions (desktop build only)
+  useEffect(() => {
+    const bridge = getBridge()
+    if (!bridge) return
+    const events = (window as unknown as { buddyEvents?: { on: (c: string, fn: () => void) => () => void } }).buddyEvents
+    if (!events) return
+    const offs = [
+      events.on('menu:settings', () => setAiOpen(true)),
+      events.on('menu:review', () => setView('review')),
+      events.on('menu:compose', () => setView('compose')),
+      events.on('menu:open-photos', async () => {
+        const files = await bridge.files.openImages()
+        if (files.length) {
+          await addFiles(
+            files.map((f) => new File([f.data], f.name, { type: f.type, lastModified: f.lastModified })),
+          )
+        }
+      }),
+    ]
+    return () => offs.forEach((off) => off())
+  }, [addFiles, setAiOpen, setView])
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -82,9 +117,20 @@ export default function App() {
         void addFiles(files)
       }
     }
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey
+      if (meta && e.key === ',') {
+        e.preventDefault()
+        setAiOpen(true)
+      }
+    }
     window.addEventListener('paste', onPaste)
-    return () => window.removeEventListener('paste', onPaste)
-  }, [addFiles])
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('paste', onPaste)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [addFiles, setAiOpen])
 
   const showDrop = view === 'drop' || photos.length === 0
 
@@ -93,6 +139,7 @@ export default function App() {
       <TopBar />
       {showDrop ? <DropView /> : view === 'review' ? <ReviewView /> : <ComposeView />}
       <Editor />
+      <AiSettings />
       {processing && <ProcessingOverlay />}
       <BusyOverlay />
       <Toasts />

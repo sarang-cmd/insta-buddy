@@ -1,0 +1,41 @@
+appId: app.instabuddy.desktop
+productName: Insta Buddy
+copyright: Insta Buddy
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**
+  - electron/dist/**
+  - package.json
+  - '!**/*.map'
+asar: true
+compression: maximum
+mac:
+  category: public.app-category.photography
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  darkModeSupport: true
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+win:
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+  artifactName: ${productName}-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+linux:
+  target: [AppImage, deb]
+  category: Graphics
+  synopsis: Sort, cull and touch up a photo dump, on-device
+  desktop:
+    entry:
+      Name: Insta Buddy
+      Comment: Holiday photo dumps, sorted

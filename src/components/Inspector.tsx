@@ -1,8 +1,11 @@
-import { Download, Eye, EyeOff, Pencil, RotateCcw, Sparkles, Star, Undo2, X } from 'lucide-react'
+import { Bot, Download, Eye, EyeOff, Pencil, RotateCcw, Sparkles, Star, Undo2, X } from 'lucide-react'
 import { usePreview } from '../hooks'
 import { downloadBlob, exportSingle } from '../lib/export'
 import { formatTime, heroScore } from '../lib/grouping'
 import { useStore } from '../lib/store'
+import { useAiStore } from '../lib/aiStore'
+import { cropForAspect } from '../lib/image'
+import type { AiAdvice } from '../lib/ai/tasks'
 import { suggestionTone, suggestionsFor } from '../lib/suggestions'
 import type { Photo, Suggestion } from '../lib/types'
 
@@ -41,6 +44,14 @@ export function Inspector({ photos }: { photos: Photo[] }) {
   const applySafeAll = useStore((s) => s.applySafeAll)
   const toast = useStore((s) => s.toast)
 
+  const aiProviderId = useAiStore((s) => s.settings.providerId)
+  const aiAdviceMap = useAiStore((s) => s.advice)
+  const aiAdviceBusy = useAiStore((s) => s.adviceBusy)
+  const requestAdvice = useAiStore((s) => s.requestAdvice)
+  const clearAdvice = useAiStore((s) => s.clearAdvice)
+  const updateRecipe = useStore((s) => s.updateRecipe)
+  const updateAdjust = useStore((s) => s.updateAdjust)
+
   const photo = photos.find((p) => p.id === activeId)
   const preview = usePreview(photo, 900)
 
@@ -62,6 +73,30 @@ export function Inspector({ photos }: { photos: Photo[] }) {
   const clusterMembers = cluster?.photoIds.map((id) => photos.find((p) => p.id === id)!).filter(Boolean) ?? []
   const bestInCluster = [...clusterMembers].sort((x, y) => heroScore(y) - heroScore(x))[0]
   const edited = photo.retouchCount > 0 || JSON.stringify(photo.recipe) !== JSON.stringify(photo.originalRecipe)
+  const advice: AiAdvice | undefined = aiAdviceMap[photo.id]
+
+  const applyAiEdit = (kind: string, amount?: number) => {
+    const aspect = photo.analysis?.aspect ?? 1
+    if (kind === 'straighten') {
+      const deg = Math.max(-8, Math.min(8, amount ?? (photo.analysis?.tiltDeg ?? 0)))
+      updateRecipe(photo.id, { straighten: deg })
+    } else if (kind === 'crop') {
+      const target = amount && amount > 0.4 && amount < 2 ? amount : 0.8
+      const crop = cropForAspect(aspect, 1, target, photo.analysis?.subjectX ?? 0.5, photo.analysis?.subjectY ?? 0.5)
+      updateRecipe(photo.id, { crop: { x: 0, y: crop.y, w: crop.w, h: crop.h } })
+    } else if (kind === 'extend') {
+      updateRecipe(photo.id, { extend: 0.8, crop: null })
+    } else if (kind === 'sharpen') {
+      updateAdjust(photo.id, { sharpen: Math.max(10, Math.min(60, amount ?? 25)) })
+    } else if (kind === 'exposure') {
+      const v = Math.max(-40, Math.min(40, amount ?? 10))
+      updateAdjust(photo.id, v >= 0 ? { exposure: v, shadows: 18 } : { exposure: v, highlights: -20 })
+    } else if (kind === 'color') {
+      updateAdjust(photo.id, { vibrance: 18, temp: (photo.analysis?.wbCast ?? 0) > 0.08 ? -12 : 8 })
+    } else if (kind === 'remove') {
+      setEditorOpen(true)
+    }
+  }
 
   return (
     <aside className="panel">
@@ -101,6 +136,49 @@ export function Inspector({ photos }: { photos: Photo[] }) {
           <b style={{ color: 'var(--accent-2)' }}>Retake alert.</b> {bestInCluster.meta.fileName} scores higher in
           this moment ({Math.round(bestInCluster.analysis?.scores.overall ?? 0)} vs{' '}
           {Math.round(a?.scores.overall ?? 0)}).
+        </div>
+      )}
+
+      <div className="section-label">
+        <h4>AI second opinion</h4>
+        <button
+          className="btn small ghost"
+          onClick={() => (advice ? clearAdvice(photo.id) : requestAdvice(photo))}
+          disabled={aiAdviceBusy === photo.id}
+          title={aiProviderId ? 'Ask your AI provider to review this frame' : 'Configure a provider in Settings → AI'}
+        >
+          <Bot size={11} /> {aiAdviceBusy === photo.id ? 'Reviewing…' : advice ? 'Clear' : aiProviderId ? 'Ask AI' : 'Set up AI'}
+        </button>
+      </div>
+
+      {advice && (
+        <div className="ai-advice">
+          <h5>
+            <Bot size={11} /> {advice.score}/10 · agent view
+          </h5>
+          <div className="verdict">{advice.verdict}</div>
+          {advice.issues.length > 0 && (
+            <ul>
+              {advice.issues.map((issue, i) => (
+                <li key={i} className={`sev-${issue.severity}`}>
+                  <strong>{issue.type}</strong> — {issue.note}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="ai-edit-row">
+            {advice.edits.map((edit, i) => (
+              <button
+                key={i}
+                className="chip"
+                title={edit.reason}
+                onClick={() => applyAiEdit(edit.kind, edit.amount)}
+              >
+                {edit.kind === 'remove' ? 'Open eraser' : `Apply · ${edit.label}`}
+              </button>
+            ))}
+          </div>
+          <span className="model-tag">{advice.model}</span>
         </div>
       )}
 

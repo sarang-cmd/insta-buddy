@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import { ImagePlus, Sparkles, Upload, Wand2, Layers, Crop, Eraser, Users, Zap } from 'lucide-react'
+import { ImagePlus, Sparkles, Upload, Wand2, Layers, Crop, Eraser, Users, Zap, MonitorDown } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { getBridge } from '../lib/ai/bridge'
 
 export function DropView() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -9,9 +10,21 @@ export function DropView() {
   const [drag, setDrag] = useState(false)
   const [loadingDemo, setLoadingDemo] = useState(false)
 
+  const bridge = getBridge()
+
   const onFiles = async (files: FileList | File[] | null) => {
     if (!files) return
     await addFiles(Array.from(files))
+  }
+
+  const pick = async () => {
+    if (!bridge) {
+      inputRef.current?.click()
+      return
+    }
+    const picked = await bridge.files.openImages()
+    if (!picked.length) return
+    await addFiles(picked.map((f) => new File([f.data], f.name, { type: f.type, lastModified: f.lastModified })))
   }
 
   return (
@@ -44,7 +57,7 @@ export function DropView() {
             remove people, crop, extend, sharpen.
           </p>
           <div className="hero-actions">
-            <button className="btn primary" onClick={() => inputRef.current?.click()}>
+            <button className="btn primary" onClick={pick}>
               <Upload size={15} /> Choose photos
             </button>
             <button
@@ -93,9 +106,14 @@ export function DropView() {
           </div>
           <h3>{drag ? 'Drop them here' : 'Drag your photos in'}</h3>
           <p>JPEG, PNG or WebP · HEIC will fall back to whatever your browser can decode</p>
-          <button className="btn" onClick={() => inputRef.current?.click()}>
+          <button className="btn" onClick={pick}>
             <Upload size={14} /> Browse files
           </button>
+          {bridge && (
+            <div className="desktop-badge" style={{ justifyContent: 'center', marginTop: 8 }}>
+              <MonitorDown size={11} /> desktop app · native file picker, encrypted keys, no CORS
+            </div>
+          )}
           <div className="dz-stats">
             <div>
               <b>0 uploads</b>

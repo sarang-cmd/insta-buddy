@@ -35,6 +35,8 @@ interface AppState {
   format: '4:5' | '1:1' | '9:16'
   ordering: 'chrono' | 'best' | 'color'
   captions: CaptionSet | null
+  captionsSource: 'local' | 'ai' | null
+  aiCaptionModel: string | null
   captionOverrides: { short?: string; playful?: string; story?: string }
   toasts: Toast[]
   editorOpen: boolean
@@ -74,6 +76,12 @@ interface AppState {
   setOrdering: (o: AppState['ordering']) => void
   setCaptionOverride: (which: 'short' | 'playful' | 'story', text: string) => void
   refreshCaptions: () => void
+  applyAiCaptions: (
+    captions: CaptionSet,
+    drafts: { short: string; playful: string; story: string },
+    model: string,
+  ) => void
+  replaceBaseWithDataUrl: (id: string, dataUrl: string, label: string) => Promise<void>
   toast: (text: string, tone?: Toast['tone']) => void
   clearToast: (id: number) => void
 }
@@ -144,6 +152,8 @@ export const useStore = create<AppState>((set, get) => ({
   format: '4:5',
   ordering: 'chrono',
   captions: null,
+  captionsSource: null,
+  aiCaptionModel: null,
   captionOverrides: {},
   toasts: [],
   editorOpen: false,
@@ -489,6 +499,47 @@ export const useStore = create<AppState>((set, get) => ({
     const stats = tripStats(photos, sessions, get().clusters)
     const selected = photos.filter((p) => p.selected && !p.hidden)
     const captions = generateCaptions(selected.length ? selected : photos, sessions, stats)
-    set({ captions, captionOverrides: {} })
+    set({ captions, captionOverrides: {}, captionsSource: 'local', aiCaptionModel: null })
+  },
+
+  applyAiCaptions: (captions, drafts, model) => {
+    set({
+      captions,
+      captionsSource: 'ai',
+      aiCaptionModel: model,
+      captionOverrides: { short: drafts.short, playful: drafts.playful, story: drafts.story },
+    })
+  },
+
+  replaceBaseWithDataUrl: async (id, dataUrl, label) => {
+    const photo = get().photos.find((p) => p.id === id)
+    if (!photo) return
+    const blob = await (await fetch(dataUrl)).blob()
+    const url = URL.createObjectURL(blob)
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image()
+      el.onload = () => resolve(el)
+      el.onerror = () => reject(new Error('bad image'))
+      el.src = url
+    })
+    const snapshot = { baseUrl: photo.baseUrl!, recipe: cloneRecipe(photo.recipe) }
+    if (photo.baseUrl && photo.baseUrl !== photo.originalUrl) URL.revokeObjectURL(photo.baseUrl)
+    invalidatePhoto(id)
+    set((s) => ({
+      photos: s.photos.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              baseUrl: url,
+              recipe: EMPTY_RECIPE(),
+              baseVersion: p.baseVersion + 1,
+              retouchCount: p.retouchCount + 1,
+              undoStack: [...p.undoStack, snapshot],
+              meta: { ...p.meta, width: img.naturalWidth, height: img.naturalHeight },
+            }
+          : p,
+      ),
+    }))
+    get().toast(label, 'good')
   },
 }))
