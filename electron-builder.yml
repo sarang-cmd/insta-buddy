@@ -13,6 +13,7 @@ asar: true
 compression: maximum
 mac:
   category: public.app-category.photography
+  icon: build/icon.png
   target:
     - target: dmg
       arch: [arm64, x64]
@@ -22,6 +23,7 @@ mac:
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
 win:
+  icon: build/icon.ico
   target:
     - target: nsis
       arch: [x64, arm64]
