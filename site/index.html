@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <meta
+      name="description"
+      content="Insta Buddy groups a holiday photo dump into moments, picks keepers, suggests touch-ups and exports a ready-to-post set. It runs on your device."
+    />
+    <meta property="og:title" content="Insta Buddy, your camera roll in order" />
+    <meta
+      property="og:description"
+      content="An on-device photo dump sorter with optional AI. Real screens, a working demo and no upload by default."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/assets/fonts/newsreader-latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>Insta Buddy, your camera roll in order</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Insta Buddy home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>insta buddy</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#product">Product</a>
+        <a href="#how">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+        <a class="nav-demo" href="demo.html">Open demo</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-grid">
+          <div>
+            <h1 id="hero-title">Bring the whole camera roll.<br />Leave with the keepers.</h1>
+            <p class="lede">
+              Drop a folder of holiday photos. Insta Buddy groups them into moments, picks the keeper from every burst
+              and retake, suggests the edits you would actually make, and exports a set that is ready to post. The work
+              happens on your device.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="demo.html">Open the working demo</a>
+              <a
+                class="button secondary"
+                href="https://github.com/sarang-cmd/insta-buddy"
+                target="_blank"
+                rel="noreferrer"
+                >Read the source</a
+              >
+            </div>
+          </div>
+          <aside class="hero-aside" aria-label="Product defaults">
+            <p>Private by default. Optional AI when you want a second opinion.</p>
+            <dl class="hero-facts">
+              <div><dt>Default</dt><dd>On-device only</dd></div>
+              <div><dt>AI</dt><dd>12 optional providers</dd></div>
+              <div><dt>Shells</dt><dd>Web and desktop</dd></div>
+              <div><dt>Output</dt><dd>One ZIP</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      <section class="stage-section" id="product" aria-labelledby="stage-title">
+        <div class="stage-head">
+          <div>
+            <h2 id="stage-title">Real screens, not a mockup.</h2>
+            <p>Step through the start, review, edit and compose views from the app itself.</p>
+          </div>
+          <div class="tabs" role="tablist" aria-label="App screens" data-tablist>
+            <button class="tab" type="button" role="tab" id="tab-start" aria-controls="panel-start" aria-selected="true" tabindex="0">Start</button>
+            <button class="tab" type="button" role="tab" id="tab-review" aria-controls="panel-review" aria-selected="false" tabindex="-1">Review</button>
+            <button class="tab" type="button" role="tab" id="tab-edit" aria-controls="panel-edit" aria-selected="false" tabindex="-1">Edit</button>
+            <button class="tab" type="button" role="tab" id="tab-compose" aria-controls="panel-compose" aria-selected="false" tabindex="-1">Compose</button>
+          </div>
+        </div>
+
+        <div class="screen-frame">
+          <div class="screen-bar">
+            <span>Insta Buddy, real app screen</span>
+            <span class="demo-tag">Demo trip, generated locally</span>
+          </div>
+          <div class="screen-viewport">
+            <div id="panel-start" role="tabpanel" aria-labelledby="tab-start" tabindex="0">
+              <img
+                src="/assets/screens/drop.webp"
+                width="1440"
+                height="900"
+                decoding="async"
+                alt="Real Insta Buddy start screen with a drop zone, photo picker and a button to generate a demo trip."
+              />
+            </div>
+            <div id="panel-review" role="tabpanel" aria-labelledby="tab-review" tabindex="0" hidden>
+              <img
+                src="/assets/screens/review.webp"
+                width="1440"
+                height="900"
+               
+                decoding="async"
+                alt="Real Insta Buddy review screen showing grouped moments, a selected keeper and suggested touch-ups on locally generated demo photos."
+              />
+            </div>
+            <div id="panel-edit" role="tabpanel" aria-labelledby="tab-edit" tabindex="0" hidden>
+              <img
+                src="/assets/screens/editor.webp"
+                width="1440"
+                height="900"
+               
+                decoding="async"
+                alt="Real Insta Buddy editor showing a generated demo photo, light controls and suggested edits."
+              />
+            </div>
+            <div id="panel-compose" role="tabpanel" aria-labelledby="tab-compose" tabindex="0" hidden>
+              <img
+                src="/assets/screens/compose.webp"
+                width="1440"
+                height="900"
+               
+                decoding="async"
+                alt="Real Insta Buddy compose screen with a nine frame feed grid, caption drafts and export controls on generated demo photos."
+              />
+            </div>
+          </div>
+        </div>
+        <div class="stage-caption">
+          <span>Real app screens. The sample photos are painted by the app's demo generator, not taken from customers.</span>
+          <a href="demo.html">Open the working demo</a>
+        </div>
+      </section>
+
+      <section class="process" id="how" aria-labelledby="process-title">
+        <div class="process-inner">
+          <div class="process-intro">
+            <h2 id="process-title">A calmer path through a messy folder.</h2>
+            <p>
+              The app reads what is already in your files, scores each frame locally and keeps the decisions visible.
+              You can change any keeper, suggestion or caption before export.
+            </p>
+          </div>
+          <ol class="process-list">
+            <li class="process-row">
+              <span class="process-num" aria-hidden="true">01</span>
+              <div class="process-copy">
+                <h3>Group the roll</h3>
+                <p>
+                  Capture time, file time and visual similarity split the trip into sessions and moments. Bursts and
+                  near-duplicates land together, with the source of each timestamp shown in the app.
+                </p>
+              </div>
+              <div class="process-crop">
+                <img class="crop-review" src="/assets/screens/review.webp" alt="Detail of the real review screen showing a grouped moment." />
+              </div>
+            </li>
+            <li class="process-row">
+              <span class="process-num" aria-hidden="true">02</span>
+              <div class="process-copy">
+                <h3>Choose a keeper</h3>
+                <p>
+                  Sharpness, exposure and colour scores pick one frame from each moment. The rest are labelled retake
+                  or alt, with a readable reason, and you can promote a different frame at any time.
+                </p>
+              </div>
+              <div class="process-crop">
+                <img class="crop-editor" src="/assets/screens/editor.webp" alt="Detail of the real editor showing suggested edits for a generated demo photo." />
+              </div>
+            </li>
+            <li class="process-row">
+              <span class="process-num" aria-hidden="true">03</span>
+              <div class="process-copy">
+                <h3>Finish the set</h3>
+                <p>
+                  Reversible touch-ups, local caption drafts and a feed grid come together in one ZIP. Desktop adds
+                  native save dialogs and encrypted key storage for optional AI providers.
+                </p>
+              </div>
+              <div class="process-crop">
+                <img class="crop-compose" src="/assets/screens/compose.webp" alt="Detail of the real compose screen showing a feed grid and caption drafts." />
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="privacy" id="privacy" aria-labelledby="privacy-title">
+        <div class="privacy-grid">
+          <div>
+            <h2 id="privacy-title">Your photos do not need a server.</h2>
+            <p class="section-lede">
+              Decoding, analysis, grouping, retouching and export run in the browser or desktop app. AI is a separate,
+              off-by-default choice, and sending photos to a cloud provider needs its own opt-in.
+            </p>
+            <div class="privacy-flow" aria-label="Local data flow">
+              <div><strong>Your folder</strong><span>JPEG, PNG or WebP, plus formats your browser can decode.</span></div>
+              <div><strong>Local work</strong><span>EXIF, scoring, grouping, edits, captions and ZIP export.</span></div>
+              <div><strong>Optional AI</strong><span>12 providers, all off by default. Photo upload is a separate switch.</span></div>
+              <div><strong>Your disk</strong><span>Edited JPEGs, caption files and a feed grid.</span></div>
+            </div>
+          </div>
+          <figure class="privacy-visual">
+            <img
+              src="/assets/screens/ai-settings.webp"
+              width="1440"
+              height="900"
+             
+              decoding="async"
+              alt="Real Insta Buddy AI settings screen with On-device only selected and the optional provider list beside it."
+            />
+            <figcaption>Real app screen. On-device only is selected by default in AI settings.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="demo-cta" aria-labelledby="demo-title">
+        <div class="demo-cta-inner">
+          <div>
+            <h2 id="demo-title">Open the real thing.</h2>
+            <p>
+              The working demo is the same web app from this repository. Click Try a demo trip inside it to paint
+              sample holiday photos in your browser. Nothing is uploaded, and you can clear the trip at any time.
+            </p>
+          </div>
+          <div class="demo-cta-actions">
+            <a class="button primary" href="demo.html">Open working demo</a>
+            <a
+              class="button secondary"
+              href="https://github.com/sarang-cmd/insta-buddy"
+              target="_blank"
+              rel="noreferrer"
+              >View source on GitHub</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="faq" id="faq" aria-labelledby="faq-title">
+        <div class="faq-grid">
+          <div>
+            <h2 id="faq-title">Questions, answered.</h2>
+            <p>Details that matter before you hand over a folder of photos.</p>
+          </div>
+          <div class="faq-list">
+            <details>
+              <summary>Do I need an AI provider?</summary>
+              <p>
+                No. All 12 providers are optional and off by default. The on-device engine handles grouping, keeper
+                selection, touch-ups, captions and export.
+              </p>
+            </details>
+            <details>
+              <summary>Where do my photos go?</summary>
+              <p>
+                Decoding, scoring, edits and export happen in the browser or desktop app. Photos are not uploaded
+                unless you enable an AI feature and allow that feature to send images to a provider you chose.
+              </p>
+            </details>
+            <details>
+              <summary>What is the demo trip?</summary>
+              <p>
+                The app paints procedural holiday photos locally so you can try the whole workflow without adding
+                files. They are simulated images, not real customer photos.
+              </p>
+            </details>
+            <details>
+              <summary>What does the desktop app add?</summary>
+              <p>
+                Native file and save dialogs, AI keys stored encrypted in the OS keychain, and AI requests proxied
+                from the main process so those keys never enter the page.
+              </p>
+            </details>
+            <details>
+              <summary>What can I export?</summary>
+              <p>
+                A ZIP with edited JPEGs at your chosen long edge, caption text and JSON files, and a feed grid image.
+              </p>
+            </details>
+            <details>
+              <summary>What are the limits?</summary>
+              <p>
+                People detection is a heuristic, thin wires over busy backgrounds can be missed, extend uses mirrored
+                edge synthesis, and local captions are template-generated. Every result stays editable.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>insta buddy</span>
+          </a>
+          <p>An on-device photo dump sorter with optional AI.</p>
+        </div>
+        <div>
+          <p class="footer-heading">Explore</p>
+          <div class="footer-links">
+            <a href="#product">Product</a>
+            <a href="#how">How it works</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#faq">FAQ</a>
+            <a href="demo.html">Working demo</a>
+          </div>
+        </div>
+        <div>
+          <p class="footer-heading">Project</p>
+          <div class="footer-links">
+            <a href="https://github.com/sarang-cmd/insta-buddy" target="_blank" rel="noreferrer">Source on GitHub</a>
+            <a href="terms.html">Terms of Service <span class="draft-note">draft</span></a>
+            <a href="privacy.html">Privacy Policy <span class="draft-note">draft</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Terms and Privacy are drafts for review. Missing publisher and contact details are marked on those pages.</span>
+        <span>No account. No upload by default.</span>
+      </div>
+    </footer>
+
+    <script type="module" src="/site.js"></script>
+  </body>
+</html>

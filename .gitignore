@@ -6,3 +6,5 @@ dist
 .tmp
 release
 electron/dist
+site/dist
+site/public/app
