@@ -26,6 +26,7 @@
     "desktop:package:linux": "npm run build && npm run electron:build && electron-builder --linux AppImage deb --publish never"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "exifr": "^7.1.3",
     "jszip": "^3.10.1",
