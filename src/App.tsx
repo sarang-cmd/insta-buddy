@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { CheckCircle2, Info, TriangleAlert } from 'lucide-react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { useStore } from './lib/store'
 import { useAiStore } from './lib/aiStore'
 import { getBridge } from './lib/ai/bridge'
@@ -143,6 +144,7 @@ export default function App() {
       {processing && <ProcessingOverlay />}
       <BusyOverlay />
       <Toasts />
+      <SpeedInsights />
     </div>
   )
 }

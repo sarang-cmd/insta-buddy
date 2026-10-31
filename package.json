@@ -26,6 +26,7 @@
     "desktop:package:linux": "npm run build && npm run electron:build && electron-builder --linux AppImage deb --publish never"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "exifr": "^7.1.3",
     "jszip": "^3.10.1",
     "lucide-react": "^0.469.0",
@@ -38,9 +39,9 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
     "typescript": "^5.7.2",
-    "vite": "^6.0.7",
-    "electron-builder": "^25.1.8"
+    "vite": "^6.0.7"
   },
   "main": "electron/dist/main.cjs",
   "description": "Sort, cull, touch up and caption a holiday photo dump — on-device, with optional AI providers.",
